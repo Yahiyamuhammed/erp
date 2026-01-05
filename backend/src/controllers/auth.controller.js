@@ -3,12 +3,11 @@ import User from "../models/User.js";
 import { generateToken } from "../utils/jwt.js";
 
 export const login = async (req, res) => {
-    console.log('routew')
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).populate({
     path: "roleId",
-    populate: { path: "permissions" }
+    populate: { path: "permissions" },
   });
 
   if (!user) {
@@ -23,7 +22,7 @@ export const login = async (req, res) => {
 
   const token = generateToken({
     id: user._id,
-    roleId: user.roleId._id
+    roleId: user.roleId._id,
   });
 
   res.json({
@@ -31,7 +30,7 @@ export const login = async (req, res) => {
     user: {
       name: user.name,
       role: user.roleId.name,
-      permissions: user.roleId.permissions.map((p) => p.code)
-    }
+      permissions: user.roleId.permissions.map((p) => p.code),
+    },
   });
 };
