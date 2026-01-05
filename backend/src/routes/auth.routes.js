@@ -3,6 +3,11 @@ import { login } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
-router.post("/login", login);
+router.get("/", (req, res) => {
+  console.log("get",req);
+  res.status(200).json({
+    message: "GET request working"
+  });
+});router.post("/login", login);
 
 export default router;

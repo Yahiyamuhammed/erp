@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import { generateToken } from "../utils/jwt.js";
 
 export const login = async (req, res) => {
+    console.log('routew')
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).populate({

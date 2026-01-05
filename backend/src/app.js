@@ -5,6 +5,10 @@ import userRoutes from "./routes/user.routes.js";
 const app = express();
 
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Server is alive");
+});
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
