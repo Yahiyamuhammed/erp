@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { useUsers } from "../../hooks/query/useUsers";
-import { useRoles } from "../../hooks/query/useRoles";
-import { useCreateUser } from "../../hooks/mutations/useCreateUser";
+// import { useUsers } from "../../hooks/query/useUsers";
+import { useRoles } from "@/hooks/queries/useRoles";
+import { useCreateUser } from "@/hooks/mutations/useCreateUser";
+import { useUsers } from "@/hooks/queries/useUsers";
 
 const UserManagementPage = () => {
   const { data: users = [], isLoading } = useUsers();
