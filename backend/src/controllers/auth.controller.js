@@ -25,12 +25,17 @@ export const login = async (req, res) => {
     roleId: user.roleId._id,
   });
 
-  res.json({
-    token,
-    user: {
-      name: user.name,
-      role: user.roleId.name,
-      permissions: user.roleId.permissions.map((p) => p.code),
-    },
-  });
+  res
+    .cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: false,
+    })
+    .json({
+      user: {
+        name: user.name,
+        role: user.roleId.name,
+        permissions: user.roleId.permissions.map((p) => p.code),
+      },
+    });
 };
