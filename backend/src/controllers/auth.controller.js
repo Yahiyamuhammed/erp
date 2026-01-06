@@ -39,3 +39,22 @@ export const login = async (req, res) => {
       },
     });
 };
+
+export const me = async (req, res) => {
+  const user = await User.findById(req.user.id).populate({
+    path: "roleId",
+    populate: { path: "permissions" }
+  });
+
+  if (!user || !user.isActive) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  res.json({
+    user: {
+      name: user.name,
+      role: user.roleId.name,
+      permissions: user.roleId.permissions.map(p => p.code)
+    }
+  });
+};
