@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Star, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useLogin } from "../../hooks/mutations/useLogin";
+import { toast } from "sonner";
+
 
 export default function LoginPage() {
   const { mutate: login, isPending } = useLogin();
@@ -12,26 +14,35 @@ export default function LoginPage() {
   });
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    login(
-      {
-        email: formData.email,
-        password: formData.password,
+  const toastId = toast.loading("Signing in...");
+
+  login(
+    {
+      email: formData.email,
+      password: formData.password,
+    },
+    {
+      onSuccess: (data) => {
+        toast.success("Login successful", {
+          id: toastId,
+          description: "Welcome back",
+        });
+
+        console.log("Login success:", data);
       },
-      {
-        onSuccess: (data) => {
-          console.log("Login success:", data);
-          // later:
-          // save auth
-          // redirect based on role
-        },
-        onError: (error) => {
-          console.error("Login failed:", error);
-        },
-      }
-    );
-  };
+      onError: (error) => {
+        toast.error("Login failed", {
+          id: toastId,
+          description:
+            error?.response?.data?.message || "Invalid credentials",
+        });
+      },
+    }
+  );
+};
+
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#f3f4f6]">
