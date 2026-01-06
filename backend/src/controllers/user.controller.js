@@ -10,8 +10,15 @@ export const createUser = async (req, res) => {
     name,
     email,
     password: hashedPassword,
-    roleId
+    roleId,
   });
 
   res.status(201).json(user);
+};
+export const getUsers = async (req, res) => {
+  const users = await User.find({ isActive: true })
+    .select("name email isActive roleId createdAt")
+    .populate("roleId", "name");
+
+  res.json(users);
 };
