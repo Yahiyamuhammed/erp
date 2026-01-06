@@ -1,19 +1,20 @@
-import { createContext, useContext } from "react";
-import { useMeQuery } from "../query/auth.queries";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useAuthMe } from "../hooks/queries/useAuthMe";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const { data, isLoading } = useMeQuery();
+  const { data, isSuccess } = useAuthMe();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setUser(data);
+    }
+  }, [isSuccess, data]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user: data?.user || null,
-        permissions: data?.user?.permissions || [],
-        isLoading
-      }}
-    >
+    <AuthContext.Provider value={{ user }}>
       {children}
     </AuthContext.Provider>
   );
