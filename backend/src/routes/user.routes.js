@@ -1,22 +1,21 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
 import checkPermission from "../middleware/permission.middleware.js";
-import { createUser, getUsers } from "../controllers/user.controller.js";
+import {
+  createUser,
+  getUsers,
+  updateUser,
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-router.post(
-  "/",
+router.post("/", authMiddleware, checkPermission("CREATE_USER"), createUser);
+router.get("/", authMiddleware, checkPermission("VIEW_USERS"), getUsers);
+router.put(
+  "/:userId",
   authMiddleware,
-  checkPermission("CREATE_USER"),
-  createUser
+  checkPermission("UPDATE_USER"),
+  updateUser
 );
-router.get(
-  "/",
-  authMiddleware,
-  checkPermission("VIEW_USERS"),
-  getUsers
-);
-
 
 export default router;
