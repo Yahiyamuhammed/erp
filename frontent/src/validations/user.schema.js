@@ -14,6 +14,7 @@ export const createUserSchema = yup.object({
     .max(100, "Email must be less than 100 characters")
     .required("Email is required"),
 
+
   password: yup.string().when("$modalMode", {
     is: "create",
     then: (schema) =>
@@ -26,4 +27,5 @@ export const createUserSchema = yup.object({
   }),
 
   roleId: yup.string().required("Role is required"),
+
 });
