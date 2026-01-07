@@ -19,6 +19,9 @@ import { toast } from "sonner";
 import { useRoles } from "@/hooks/queries/useRoles";
 import { useCreateUser } from "@/hooks/mutations/useCreateUser";
 import { useUsers } from "@/hooks/queries/useUsers";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { createUserSchema } from "@/validations/user.schema";
 
 const UserManagementPage = () => {
   const { data: users = [], isLoading } = useUsers();
@@ -31,22 +34,26 @@ const UserManagementPage = () => {
   const [modalMode, setModalMode] = useState("create");
   const [currentUser, setCurrentUser] = useState(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    roleId: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(createUserSchema),
   });
 
-  useEffect(() => {
-    if (roles.length && !formData.roleId) {
-      setFormData((prev) => ({ ...prev, roleId: roles[0]._id }));
-    }
-  }, [roles]);
+  // useEffect(() => {
+  //   if (roles.length) {
+  //     setValue("roleId", roles[0]._id, {
+  //       shouldValidate: true,
+  //     });
+  //   }
+  // }, [roles, setValue]);
 
   const handleOpenCreate = () => {
     setModalMode("create");
-    setFormData({
+    reset({
       name: "",
       email: "",
       password: "",
@@ -57,58 +64,36 @@ const UserManagementPage = () => {
 
   const handleOpenEdit = (user) => {
     setModalMode("edit");
-    setCurrentUser(user);
-    setFormData({
+
+    reset({
       name: user.name,
       email: user.email,
+      roleId: user.roleId?._id,
       password: "",
-      roleId: user.roleId._id,
     });
+
     setIsModalOpen(true);
   };
 
-  const handleSave = async (e) => {
-  e.preventDefault();
-
-  if (modalMode === "create") {
-    const { name, email, password, roleId } = formData;
-
-    if (!name || !email || !password || !roleId) {
-      toast.warning("Please fill all required fields", {
-        description: "Name, email, password and role are mandatory",
-      });
-      return;
-    }
-
+  const handleSave = (data) => {
     const toastId = toast.loading("Creating user...");
 
-    createUserMutation.mutate(
-      {
-        name,
-        email,
-        password,
-        roleId,
+    createUserMutation.mutate(data, {
+      onSuccess: () => {
+        toast.success("User created successfully", {
+          id: toastId,
+        });
+        reset();
+        setIsModalOpen(false);
       },
-      {
-        onSuccess: () => {
-          toast.success("User created successfully", {
-            id: toastId,
-            description: "The user can now log in",
-          });
-          setIsModalOpen(false);
-        },
-        onError: (err) => {
-          toast.error("Failed to create user", {
-            id: toastId,
-            description:
-              err?.response?.data?.message || "Something went wrong",
-          });
-        },
-      }
-    );
-  }
-};
-
+      onError: (err) => {
+        toast.error("Failed to create user", {
+          id: toastId,
+          description: err?.response?.data?.message || "Something went wrong",
+        });
+      },
+    });
+  };
 
   const formatRole = (role) =>
     role
@@ -174,12 +159,8 @@ const UserManagementPage = () => {
                   <div className="font-semibold">{user.name}</div>
                   <div className="text-sm text-gray-500">{user.email}</div>
                 </td>
-                <td className="p-4">
-                  {formatRole(user.roleId.name)}
-                </td>
-                <td className="p-4">
-                  {user.isActive ? "Active" : "Inactive"}
-                </td>
+                <td className="p-4">{formatRole(user.roleId.name)}</td>
+                <td className="p-4">{user.isActive ? "Active" : "Inactive"}</td>
                 <td className="p-4">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
@@ -197,9 +178,7 @@ const UserManagementPage = () => {
         </table>
 
         {filteredUsers.length === 0 && (
-          <div className="p-6 text-center text-gray-500">
-            No users found
-          </div>
+          <div className="p-6 text-center text-gray-500">No users found</div>
         )}
       </div>
 
@@ -207,7 +186,7 @@ const UserManagementPage = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
           <form
-            onSubmit={handleSave}
+            onSubmit={handleSubmit(handleSave)}
             className="bg-white p-6 rounded-xl w-full max-w-lg space-y-4"
           >
             <h2 className="text-xl font-bold">
@@ -215,46 +194,55 @@ const UserManagementPage = () => {
             </h2>
 
             <input
-              className="w-full border p-2 rounded"
+              {...register("name")}
+              className={`w-full border p-2 rounded ${
+                errors.name ? "border-red-500" : ""
+              }`}
               placeholder="Name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
             />
+            {errors.name && (
+              <p className="text-sm text-red-600">{errors.name.message}</p>
+            )}
 
             <input
-              className="w-full border p-2 rounded"
+              {...register("email")}
+              className={`w-full border p-2 rounded ${
+                errors.email ? "border-red-500" : ""
+              }`}
               placeholder="Email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
             />
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email.message}</p>
+            )}
 
             <select
-              className="w-full border p-2 rounded"
-              value={formData.roleId}
-              onChange={(e) =>
-                setFormData({ ...formData, roleId: e.target.value })
-              }
+              {...register("roleId")}
+              className={`w-full border p-2 rounded ${
+                errors.roleId ? "border-red-500" : ""
+              }`}
             >
+              <option value="">Select role</option>
               {roles.map((r) => (
                 <option key={r._id} value={r._id}>
                   {formatRole(r.name)}
                 </option>
               ))}
             </select>
+            {errors.roleId && (
+              <p className="text-sm text-red-600">{errors.roleId.message}</p>
+            )}
 
             <input
               type="password"
-              className="w-full border p-2 rounded"
+              {...register("password")}
+              className={`w-full border p-2 rounded ${
+                errors.password ? "border-red-500" : ""
+              }`}
               placeholder="Password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
             />
+            {errors.password && (
+              <p className="text-sm text-red-600">{errors.password.message}</p>
+            )}
 
             <div className="flex gap-3 justify-end">
               <button
