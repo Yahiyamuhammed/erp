@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Star, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useLogin } from "../../hooks/mutations/useLogin";
 import { toast } from "sonner";
-import {  useNavigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { mutate: login, isPending } = useLogin();
 
@@ -17,47 +18,44 @@ export default function LoginPage() {
   });
 
   const handleSubmit = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
+    const toastId = toast.loading("Signing in...");
 
-  const toastId = toast.loading("Signing in...");
-
-  login(
-    {
-      email: formData.email,
-      password: formData.password,
-    },
-    {
-      onSuccess: (data) => {
-        toast.success("Login successful", {
-          id: toastId,
-          description: "Welcome back",
-        });
-
-        navigate("/", { replace: true });
+    login(
+      {
+        email: formData.email,
+        password: formData.password,
       },
-      onError: (error) => {
-        toast.error("Login failed", {
-          id: toastId,
-          description:
-            error?.response?.data?.message || "Invalid credentials",
-        });
-      },
-    }
-  );
-};
+      {
+        onSuccess: (data) => {
+          toast.success("Login successful", {
+            id: toastId,
+            description: "Welcome back",
+          });
+          queryClient.invalidateQueries({ queryKey: ["authMe"] });
 
+          navigate("/", { replace: true });
+        },
+        onError: (error) => {
+          toast.error("Login failed", {
+            id: toastId,
+            description:
+              error?.response?.data?.message || "Invalid credentials",
+          });
+        },
+      }
+    );
+  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#f3f4f6]">
-      
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-200/50 rounded-full blur-[100px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-200/50 rounded-full blur-[100px]" />
       <div className="absolute top-[40%] left-[40%] w-72 h-72 bg-[#D4F34A]/20 rounded-full blur-[80px]" />
 
       <div className="relative z-10 w-full max-w-md p-8 m-4">
         <div className="bg-white/60 backdrop-blur-2xl border border-white/60 shadow-xl rounded-3xl p-8 md:p-10">
-          
           <div className="flex flex-col items-center mb-8">
             <div className="flex items-center gap-2 mb-2">
               <Star className="w-8 h-8 fill-gray-900 text-gray-900" />
@@ -74,7 +72,6 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 ml-1">
                 Email Address
@@ -146,9 +143,7 @@ export default function LoginPage() {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
               Don&apos;t have an account?{" "}
-              <span className="font-semibold text-gray-800">
-                Contact Admin
-              </span>
+              <span className="font-semibold text-gray-800">Contact Admin</span>
             </p>
           </div>
         </div>
