@@ -7,7 +7,7 @@ export const validate = (schema) => async (req, res, next) => {
     next();
   } catch (err) {
     return res.status(400).json({
-      message: "Validation failed",
+      message: err.errors||"Validation failed",
       errors: err.errors,
     });
   }
