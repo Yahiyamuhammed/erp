@@ -12,8 +12,7 @@ export default function PermissionRoute({ permission, children }) {
   }
 
   if (!permissions.includes(permission)) {
-    console.log("perm not incuded");
-    return <Navigate to="/" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children;
