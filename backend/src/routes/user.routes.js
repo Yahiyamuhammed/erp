@@ -7,12 +7,21 @@ import {
   updateUser,
 } from "../controllers/user.controller.js";
 import { validate } from "../middleware/validate.js";
-import { createUserSchema, updateUserSchema } from "../validators/user.schema.js";
+import {
+  createUserSchema,
+  updateUserSchema,
+} from "../validators/user.schema.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, checkPermission("CREATE_USER"),validate(createUserSchema), createUser);
 router.get("/", authMiddleware, checkPermission("VIEW_USERS"), getUsers);
+router.post(
+  "/",
+  authMiddleware,
+  checkPermission("CREATE_USER"),
+  validate(createUserSchema),
+  createUser
+);
 router.put(
   "/:userId",
   authMiddleware,
