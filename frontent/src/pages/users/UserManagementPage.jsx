@@ -40,7 +40,8 @@ const UserManagementPage = () => {
     reset,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(createUserSchema ,{ context: { modalMode } }),
+    resolver: yupResolver(createUserSchema),
+    context: { modalMode },
   });
 
   const handleOpenCreate = () => {
@@ -224,14 +225,16 @@ const UserManagementPage = () => {
               <p className="text-sm text-red-600">{errors.roleId.message}</p>
             )}
 
-           { modalMode== 'create' && <input
-              type="password"
-              {...register("password")}
-              className={`w-full border p-2 rounded ${
-                errors.password ? "border-red-500" : ""
-              }`}
-              placeholder="Password"
-            />}
+            {modalMode == "create" && (
+              <input
+                type="password"
+                {...register("password")}
+                className={`w-full border p-2 rounded ${
+                  errors.password ? "border-red-500" : ""
+                }`}
+                placeholder="Password"
+              />
+            )}
             {errors.password && (
               <p className="text-sm text-red-600">{errors.password.message}</p>
             )}
