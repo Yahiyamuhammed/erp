@@ -2,9 +2,12 @@ import { useState } from "react";
 import { Star, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useLogin } from "../../hooks/mutations/useLogin";
 import { toast } from "sonner";
+import {  useNavigate } from "react-router-dom";
 
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
   const { mutate: login, isPending } = useLogin();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +34,7 @@ export default function LoginPage() {
           description: "Welcome back",
         });
 
-        console.log("Login success:", data);
+        navigate("/", { replace: true });
       },
       onError: (error) => {
         toast.error("Login failed", {
