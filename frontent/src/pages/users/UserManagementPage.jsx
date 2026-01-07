@@ -22,11 +22,13 @@ import { useUsers } from "@/hooks/queries/useUsers";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { createUserSchema } from "@/validations/user.schema";
+import { useUpdateUser } from "@/hooks/mutations/useUpdateUser";
 
 const UserManagementPage = () => {
   const { data: users = [], isLoading } = useUsers();
   const { data: roles = [] } = useRoles();
   const createUserMutation = useCreateUser();
+  const updateUserMutation = useUpdateUser();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -57,6 +59,7 @@ const UserManagementPage = () => {
 
   const handleOpenEdit = (user) => {
     setModalMode("edit");
+    setCurrentUser(user);
 
     reset({
       name: user.name,
@@ -69,23 +72,61 @@ const UserManagementPage = () => {
   };
 
   const handleSave = (data) => {
-    const toastId = toast.loading("Creating user...");
+    if (modalMode === "create") {
+      const toastId = toast.loading("Creating user...");
 
-    createUserMutation.mutate(data, {
-      onSuccess: () => {
-        toast.success("User created successfully", {
-          id: toastId,
-        });
-        reset();
-        setIsModalOpen(false);
-      },
-      onError: (err) => {
-        toast.error("Failed to create user", {
-          id: toastId,
-          description: err?.response?.data?.message || "Something went wrong",
-        });
-      },
-    });
+      createUserMutation.mutate(data, {
+        onSuccess: () => {
+          toast.success("User created successfully", {
+            id: toastId,
+          });
+          reset();
+          setIsModalOpen(false);
+        },
+        onError: (err) => {
+          toast.error("Failed to create user", {
+            id: toastId,
+            description: err?.response?.data?.message || "Something went wrong",
+          });
+        },
+      });
+      return;
+    }
+
+    if (modalMode === "edit") {
+      const toastId = toast.loading("Updating user...");
+
+      const payload = { ...data };
+
+      // Do not send empty password
+      if (!payload.password) {
+        delete payload.password;
+      }
+
+      updateUserMutation.mutate(
+        {
+          userId: currentUser._id,
+          payload,
+        },
+        {
+          onSuccess: () => {
+            toast.success("User updated successfully", {
+              id: toastId,
+            });
+            reset();
+            setIsModalOpen(false);
+            setCurrentUser(null);
+          },
+          onError: (err) => {
+            toast.error("Failed to update user", {
+              id: toastId,
+              description:
+                err?.response?.data?.message || "Something went wrong",
+            });
+          },
+        }
+      );
+    }
   };
 
   const formatRole = (role) =>
