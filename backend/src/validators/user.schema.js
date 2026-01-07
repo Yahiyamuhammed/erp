@@ -3,24 +3,38 @@ import * as yup from "yup";
 export const createUserSchema = yup.object({
   name: yup
     .string()
+    .trim()
     .min(3, "Name must be at least 3 characters")
-    .max(50, "Name must be at most 50 characters")
-    .required(),
+    .max(50, "Name must be less than 50 characters")
+    .required("Name is required"),
+
   email: yup
     .string()
-    .email("Invalid email")
-    .max(100)
-    .required(),
+    .email("Invalid email format")
+    .max(100, "Email must be less than 100 characters")
+    .required("Email is required"),
+
   password: yup
-    .string()
-    .min(6, "Password must be at least 6 characters")
-    .required(),
-  roleId: yup.string().required(),
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/, "Password must contain one uppercase letter")
+    .matches(/[0-9]/, "Password must contain one number")
+    .required("Password is required"),
+  roleId: yup.string().required("Role is required"),
 });
 
 export const updateUserSchema = yup.object({
-  name: yup.string().min(3).max(50),
-  email: yup.string().email().max(100),
-  password: yup.string().min(6),
-  roleId: yup.string(),
+  name: yup
+    .string()
+    .trim()
+    .min(3, "Name must be at least 3 characters")
+    .max(50, "Name must be less than 50 characters")
+    .required("Name is required"),
+
+  email: yup
+    .string()
+    .email("Invalid email format")
+    .max(100, "Email must be less than 100 characters")
+    .required("Email is required"),
+
+  roleId: yup.string().required("Role is required"),
 });
