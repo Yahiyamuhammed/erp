@@ -68,39 +68,47 @@ const UserManagementPage = () => {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (modalMode === "create") {
-      const toastId = toast.loading("Creating user...");
+  if (modalMode === "create") {
+    const { name, email, password, roleId } = formData;
 
-      createUserMutation.mutate(
-        {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          roleId: formData.roleId,
-        },
-        {
-          onSuccess: () => {
-            toast.success("User created successfully", {
-              id: toastId,
-              description: "The user can now log in",
-            });
-            setIsModalOpen(false);
-          },
-          onError: (err) => {
-            toast.error("Failed to create user", {
-              id: toastId,
-              description:
-                err.response?.data?.message || "Something went wrong",
-            });
-          },
-        }
-      );
+    if (!name || !email || !password || !roleId) {
+      toast.warning("Please fill all required fields", {
+        description: "Name, email, password and role are mandatory",
+      });
+      return;
     }
 
-    // Edit flow will be added later
-  };
+    const toastId = toast.loading("Creating user...");
+
+    createUserMutation.mutate(
+      {
+        name,
+        email,
+        password,
+        roleId,
+      },
+      {
+        onSuccess: () => {
+          toast.success("User created successfully", {
+            id: toastId,
+            description: "The user can now log in",
+          });
+          setIsModalOpen(false);
+        },
+        onError: (err) => {
+          toast.error("Failed to create user", {
+            id: toastId,
+            description:
+              err?.response?.data?.message || "Something went wrong",
+          });
+        },
+      }
+    );
+  }
+};
+
 
   const formatRole = (role) =>
     role
