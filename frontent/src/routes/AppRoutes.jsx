@@ -4,21 +4,20 @@ import Login from "../pages/auth/Login";
 import ProtectedRoute from "../components/protected/ProtectedRoute";
 import UserManagementPage from "@/pages/users/UserManagementPage";
 import PermissionRoute from "@/components/protected/PermissionRoute";
+import UnauthorizedPage from "@/pages/errors/Unauthorized";
+import NotFoundPage from "@/pages/errors/NotFound";
 
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/login" element={<Login />} />
 
       <Route
         path="/"
-        element={
-          <ProtectedRoute>
-            {/* <Dashboard /> */}
-          </ProtectedRoute>
-        }
+        element={<ProtectedRoute>{/* <Dashboard /> */}</ProtectedRoute>}
       />
-        <Route
+      <Route
         path="/users"
         element={
           <ProtectedRoute>
@@ -28,6 +27,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
