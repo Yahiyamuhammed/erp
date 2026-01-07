@@ -6,15 +6,18 @@ import {
   getUsers,
   updateUser,
 } from "../controllers/user.controller.js";
+import { validate } from "../middleware/validate.js";
+import { createUserSchema, updateUserSchema } from "../validators/user.schema.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, checkPermission("CREATE_USER"), createUser);
+router.post("/", authMiddleware, checkPermission("CREATE_USER"),validate(createUserSchema), createUser);
 router.get("/", authMiddleware, checkPermission("VIEW_USERS"), getUsers);
 router.put(
   "/:userId",
   authMiddleware,
   checkPermission("UPDATE_USER"),
+  validate(updateUserSchema),
   updateUser
 );
 
