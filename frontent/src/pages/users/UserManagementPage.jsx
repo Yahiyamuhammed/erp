@@ -40,16 +40,8 @@ const UserManagementPage = () => {
     reset,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(createUserSchema),
+    resolver: yupResolver(createUserSchema ,{ context: { modalMode } }),
   });
-
-  // useEffect(() => {
-  //   if (roles.length) {
-  //     setValue("roleId", roles[0]._id, {
-  //       shouldValidate: true,
-  //     });
-  //   }
-  // }, [roles, setValue]);
 
   const handleOpenCreate = () => {
     setModalMode("create");
@@ -232,14 +224,14 @@ const UserManagementPage = () => {
               <p className="text-sm text-red-600">{errors.roleId.message}</p>
             )}
 
-            <input
+           { modalMode== 'create' && <input
               type="password"
               {...register("password")}
               className={`w-full border p-2 rounded ${
                 errors.password ? "border-red-500" : ""
               }`}
               placeholder="Password"
-            />
+            />}
             {errors.password && (
               <p className="text-sm text-red-600">{errors.password.message}</p>
             )}
