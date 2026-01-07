@@ -4,6 +4,12 @@ import User from "../models/User.js";
 export const createUser = async (req, res) => {
   const { name, email, password, roleId } = req.body;
 
+  if (!name || !email || !password || !roleId) {
+    return res.status(400).json({
+      message: "All fields (name, email, password, roleId) are required",
+    });
+  }
+
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     return res.status(400).json({ message: "User already exists" });
