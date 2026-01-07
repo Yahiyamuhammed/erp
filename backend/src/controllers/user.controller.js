@@ -38,3 +38,41 @@ export const getUsers = async (req, res) => {
 
   res.json(users);
 };
+export const updateUser = async (req, res) => {
+  const { userId } = req.params;
+  const { name, email, password, roleId } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user || !user.isActive) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Email uniqueness check (excluding self)
+  if (email && email !== user.email) {
+    const emailExists = await User.findOne({
+      email,
+      _id: { $ne: userId },
+    });
+
+    if (emailExists) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
+  }
+
+  if (name) user.name = name;
+  if (email) user.email = email;
+  if (roleId) user.roleId = roleId;
+
+  if (password) {
+    user.password = await bcrypt.hash(password, 10);
+  }
+
+  await user.save();
+
+  res.json({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    roleId: user.roleId,
+  });
+};
