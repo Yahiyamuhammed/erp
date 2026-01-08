@@ -7,7 +7,11 @@ export const getRoles = async (req, res) => {
 export const getRoleById = async (req, res) => {
   const { roleId } = req.params;
 
-  const role = await Role.findById(roleId);
+  const role = await Role.findById(roleId).populate(
+    "permissions",
+    "name description"
+  );
+
   if (!role) {
     return res.status(404).json({ message: "Role not found" });
   }
@@ -17,12 +21,10 @@ export const getRoleById = async (req, res) => {
 
 export const updateRolePermissions = async (req, res) => {
   const { roleId } = req.params;
-  const { permissions } = req.body;
+  const { permissionIds } = req.body;
 
-  if (!Array.isArray(permissions)) {
-    return res
-      .status(400)
-      .json({ message: "Permissions must be an array" });
+  if (!Array.isArray(permissionIds)) {
+    return res.status(400).json({ message: "permissionIds must be an array" });
   }
 
   const role = await Role.findById(roleId);
@@ -30,11 +32,16 @@ export const updateRolePermissions = async (req, res) => {
     return res.status(404).json({ message: "Role not found" });
   }
 
-  role.permissions = permissions;
+  role.permissions = permissionIds;
   await role.save();
 
+  const updatedRole = await Role.findById(roleId).populate(
+    "permissions",
+    "name description"
+  );
+
   res.json({
-    message: "Role permissions updated successfully",
-    role,
+    message: "Permissions updated successfully",
+    role: updatedRole,
   });
 };
