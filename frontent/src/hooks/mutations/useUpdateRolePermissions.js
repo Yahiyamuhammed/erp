@@ -1,15 +1,11 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/api/axios";
-
 export const useUpdateRolePermissions = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ roleId, permissions }) => {
-      const { data } = await api.put(
-        `/roles/${roleId}/permissions`,
-        { permissions }
-      );
+    mutationFn: async ({ roleId, permissionIds }) => {
+      const { data } = await api.put(`/roles/${roleId}/permissions`, {
+        permissionIds,
+      });
       return data;
     },
     onSuccess: (_, variables) => {
