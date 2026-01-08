@@ -38,7 +38,6 @@ export default function RolePermissionModal({ roleId, open, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitting permissions:", selectedPermissions);
 
     updatePermissions.mutate({
       roleId,

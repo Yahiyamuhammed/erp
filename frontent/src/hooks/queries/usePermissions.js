@@ -2,7 +2,6 @@ import api from "@/api/axios";
 import { useQuery } from "@tanstack/react-query";
 
 export const usePermissions = () => {
-  console.log('hit usepermission')
   return useQuery({
     queryKey: ["permissions"],
     queryFn: async () => {
