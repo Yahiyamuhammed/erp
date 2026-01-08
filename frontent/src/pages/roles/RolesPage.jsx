@@ -8,7 +8,6 @@ import RolePermissionModal from "@/components/roles/RolePermissionModal";
 export default function RolesPage() {
   const { data: roles = [], isLoading } = useRoles();
   const [selectedRoleId, setSelectedRoleId] = useState(null);
-    console.log(roles)
   const columns = [
     {
       key: "name",
@@ -17,7 +16,6 @@ export default function RolesPage() {
     {
       key: "permissionCount",
       label: "Permissions",
-    //   render: row => row?.permissions?.length,
     },
     {
       key: "createdAt",

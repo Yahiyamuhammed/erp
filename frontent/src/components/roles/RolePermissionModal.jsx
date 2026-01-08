@@ -9,6 +9,7 @@ export default function RolePermissionModal({ roleId, open, onClose }) {
   const { data: role } = useRoleById(roleId);
   const { data: allPermissions = [] } = usePermissions();
   const updatePermissions = useUpdateRolePermissions();
+  console.log(allPermissions,role)
 
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [search, setSearch] = useState("");
@@ -64,7 +65,7 @@ export default function RolePermissionModal({ roleId, open, onClose }) {
               key={p._id}
               className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm"
             >
-              {p.code}
+              {p.description}
               <button
                 type="button"
                 onClick={() => removePermission(p._id)}
