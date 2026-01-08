@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+
 export const usePermissions = () => {
   return useQuery({
     queryKey: ["permissions"],

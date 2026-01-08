@@ -1,8 +1,15 @@
 import Role from "../models/Role.js";
 
 export const getRoles = async (req, res) => {
-  const roles = await Role.find({}, { name: 1 ,createdAt:1});
-  res.json(roles);
+  const roles = await Role.find({}, { name: 1, createdAt: 1, permissions: 1 });
+  const formattedRoles = roles.map((role) => ({
+    _id: role._id,
+    name: role.name,
+    createdAt: role.createdAt,
+    permissionCount: role.permissions.length,
+  }));
+
+  res.json(formattedRoles);
 };
 export const getRoleById = async (req, res) => {
   const { roleId } = req.params;
