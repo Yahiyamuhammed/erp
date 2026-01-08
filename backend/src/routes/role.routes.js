@@ -11,5 +11,18 @@ router.get(
   checkPermission("VIEW_ROLES"),
   getRoles
 );
+router.get(
+  "/:roleId",
+  authMiddleware,
+  checkPermission("VIEW_ROLES"),
+  getRoleById
+);
+
+router.put(
+  "/:roleId/permissions",
+  authMiddleware,
+  checkPermission("UPDATE_ROLE"),
+  updateRolePermissions
+);
 
 export default router;
