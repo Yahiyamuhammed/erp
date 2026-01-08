@@ -25,6 +25,7 @@ import { createUserSchema } from "@/validations/user.schema";
 import { useUpdateUser } from "@/hooks/mutations/useUpdateUser";
 import DataTable from "@/components/common/DataTable/DataTable";
 import UserFormModal from "@/components/users/UserFormModal";
+import RolesPage from "../roles/RolesPage";
 
 const UserManagementPage = () => {
   const { data: users = [], isLoading } = useUsers();
@@ -225,6 +226,7 @@ const headerAction = {
   
   emptyText="No users found"
 />
+<RolesPage />
   </>
 
   );

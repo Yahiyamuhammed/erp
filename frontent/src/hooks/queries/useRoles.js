@@ -10,3 +10,13 @@ export const useRoles = () => {
     }
   });
 };
+export const useRoleById = (roleId) => {
+  return useQuery({
+    queryKey: ["role", roleId],
+    enabled: !!roleId,
+    queryFn: async () => {
+      const { data } = await api.get(`/roles/${roleId}`);
+      return data.role;
+    },
+  });
+};
