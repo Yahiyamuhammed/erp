@@ -6,6 +6,7 @@ export default function DataTable({
   columns,
   data,
   actions = [],
+  headerAction,
   isLoading,
   emptyText = "No data found",
 }) {
@@ -16,10 +17,23 @@ export default function DataTable({
   return (
     <div className="bg-white rounded-xl overflow-hidden w-full">
       {/* Header */}
-      {(title || subtitle) && (
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-bold">{title}</h2>
-          {subtitle && <p className="text-gray-500 text-sm">{subtitle}</p>}
+      {(title || subtitle || headerAction) && (
+        <div className="p-4 border-b flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold">{title}</h2>
+            {subtitle && (
+              <p className="text-gray-500 text-sm">{subtitle}</p>
+            )}
+          </div>
+
+          {headerAction && (
+            <button
+              onClick={headerAction.onClick}
+              className="flex items-center gap-2 bg-[#D4F34A] px-4 py-2 rounded-lg font-semibold whitespace-nowrap"
+            >
+              {headerAction.label}
+            </button>
+          )}
         </div>
       )}
 
@@ -36,6 +50,7 @@ export default function DataTable({
                   {col.label}
                 </th>
               ))}
+
               {actions.length > 0 && (
                 <th className="p-4 text-right text-sm font-semibold">
                   Actions
