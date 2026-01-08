@@ -6,7 +6,6 @@ export const usePermissions = () => {
     queryKey: ["permissions"],
     queryFn: async () => {
       const { data } = await api.get("/permissions");
-      console.log(data)
       return data.permissions;
     },
   });
