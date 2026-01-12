@@ -1,7 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
 import { useCreateCompany } from "@/hooks/mutations/useCreateCompany";
 import { useUpdateCompany } from "@/hooks/mutations/useUpdateCompany";
+
+const EMPTY_FORM = {
+  name: "",
+  code: "",
+  gstNo: "",
+  isActive: true,
+};
 
 export default function CompanyModal({ open, onClose, company }) {
   const isEdit = !!company;
@@ -9,14 +16,11 @@ export default function CompanyModal({ open, onClose, company }) {
   const createCompany = useCreateCompany();
   const updateCompany = useUpdateCompany();
 
-  const [form, setForm] = useState({
-    name: "",
-    code: "",
-    gstNo: "",
-    isActive: true,
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
 
   useEffect(() => {
+    if (!open) return;
+
     if (company) {
       setForm({
         name: company.name,
@@ -24,8 +28,20 @@ export default function CompanyModal({ open, onClose, company }) {
         gstNo: company.gstNo || "",
         isActive: company.isActive,
       });
+    } else {
+      setForm(EMPTY_FORM);
     }
-  }, [company]);
+  }, [company, open]);
+
+  const isDirty = useMemo(() => {
+    if (!isEdit) return true;
+
+    return (
+      form.name !== company.name ||
+      form.gstNo !== (company.gstNo || "") ||
+      form.isActive !== company.isActive
+    );
+  }, [form, company, isEdit]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,6 +53,7 @@ export default function CompanyModal({ open, onClose, company }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isDirty) return;
 
     if (isEdit) {
       updateCompany.mutate({
@@ -45,7 +62,6 @@ export default function CompanyModal({ open, onClose, company }) {
           name: form.name,
           gstNo: form.gstNo || null,
           isActive: form.isActive,
-          ...(form.code !== company.code && { code: form.code }),
         },
       });
     } else {
@@ -67,44 +83,79 @@ export default function CompanyModal({ open, onClose, company }) {
       onSubmit={handleSubmit}
       submitLabel={isEdit ? "Update" : "Create"}
     >
-      <div className="space-y-4">
-        <input
-          name="name"
-          placeholder="Company name"
-          value={form.name}
-          onChange={handleChange}
-          className="input"
-        />
+      <div className="space-y-5">
+        {/* Company name */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Company name</label>
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="input w-full"
+            placeholder="Acme Corporation"
+          />
+        </div>
 
-        <input
-          name="code"
-          placeholder="Company code"
-          value={form.code}
-          onChange={handleChange}
-          disabled={isEdit}
-          className="input"
-        />
+        {/* Company code */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Company code</label>
+          <input
+            name="code"
+            value={form.code}
+            onChange={handleChange}
+            disabled={isEdit}
+            className={`input w-full ${
+              isEdit ? "bg-gray-100 cursor-not-allowed" : ""
+            }`}
+            placeholder="ACME"
+          />
 
-        <input
-          name="gstNo"
-          placeholder="GST number (optional)"
-          value={form.gstNo}
-          onChange={handleChange}
-          className="input"
-        />
+          {isEdit ? (
+            <p className="text-xs text-gray-500 mt-1">
+              Company code cannot be changed once created
+            </p>
+          ) : (
+            <p className="text-xs text-gray-500 mt-1">
+              This code is permanent and will be used for login and company
+              identification
+            </p>
+          )}
+        </div>
 
+        {/* GST */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            GST number (optional)
+          </label>
+          <input
+            name="gstNo"
+            value={form.gstNo}
+            onChange={handleChange}
+            className="input w-full"
+            placeholder="29ABCDE1234F1Z5"
+          />
+        </div>
+
+        {/* Status */}
         {isEdit && (
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm pt-1">
             <input
               type="checkbox"
               name="isActive"
               checked={form.isActive}
               onChange={handleChange}
             />
-            Active
+            Company is active
           </label>
         )}
       </div>
+
+      {/* Footer hint */}
+      {isEdit && !isDirty && (
+        <p className="text-xs text-gray-400 text-right pt-2">
+          No changes to save
+        </p>
+      )}
     </Modal>
   );
 }

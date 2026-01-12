@@ -49,7 +49,7 @@ export default function CompaniesPage() {
         actions={actions}
         isLoading={isLoading}
         emptyText="No companies found"
-        primaryAction={{
+        headerAction={{
           label: "Add company",
           onClick: () => setOpenCreate(true),
         }}
