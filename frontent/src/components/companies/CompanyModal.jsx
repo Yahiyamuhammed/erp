@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
+import { toast } from "sonner";
 
 const EMPTY_FORM = {
   name: "",
@@ -55,12 +56,19 @@ export default function CompanyModal({
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!isDirty) return;
+  e.preventDefault();
 
-    onSubmit(form);
+  if (!isDirty) {
+    toast.info("No changes made", {
+      description: "The company details are already up to date",
+    });
     onClose();
-  };
+    return;
+  }
+
+  onSubmit(form);
+  onClose();
+};
 
   return (
     <Modal

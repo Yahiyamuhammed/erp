@@ -5,35 +5,69 @@ import CompanyModal from "@/components/companies/CompanyModal";
 import { useCompanies } from "@/hooks/queries/useCompanies";
 import { useCreateCompany } from "@/hooks/mutations/useCreateCompany";
 import { useUpdateCompany } from "@/hooks/mutations/useUpdateCompany";
+import { toast } from "sonner";
 
 export default function CompaniesPage() {
   const navigate = useNavigate();
   const { data: companies = [], isLoading } = useCompanies();
 
-  const createCompany = useCreateCompany();
-  const updateCompany = useUpdateCompany();
+  const { mutate: createCompany } = useCreateCompany();
+  const { mutate: updateCompany } = useUpdateCompany();
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [openCreate, setOpenCreate] = useState(false);
 
   const handleCreate = (form) => {
-    createCompany.mutate({
+  createCompany(
+    {
       name: form.name,
       code: form.code,
       gstNo: form.gstNo || null,
-    });
-  };
+    },
+    {
+      onSuccess: () => {
+        toast.success("Company created successfully", {
+          description: "The company is now available for user assignment",
+        });
+      },
+      onError: (error) => {
+        toast.error("Failed to create company", {
+          description:
+            error?.response?.data?.message ||
+            "Please check the details and try again",
+        });
+      },
+    }
+  );
+};
 
   const handleUpdate = (form) => {
-    updateCompany.mutate({
+  updateCompany(
+    {
       companyId: selectedCompany._id,
       payload: {
         name: form.name,
         gstNo: form.gstNo || null,
         isActive: form.isActive,
       },
-    });
-  };
+    },
+    {
+      onSuccess: () => {
+        toast.success("Company updated successfully", {
+          description: "Changes have been saved",
+        });
+      },
+      onError: (error) => {
+        toast.error("Failed to update company", {
+          description:
+            error?.response?.data?.message ||
+            "Unable to save changes at the moment",
+        });
+      },
+    }
+  );
+};
+
 
   const columns = [
     { key: "name", label: "Company" },
@@ -46,8 +80,7 @@ export default function CompaniesPage() {
     {
       key: "createdAt",
       label: "Created",
-      render: (row) =>
-        new Date(row.createdAt).toLocaleDateString(),
+      render: (row) => new Date(row.createdAt).toLocaleDateString(),
     },
   ];
 
@@ -58,8 +91,7 @@ export default function CompaniesPage() {
     },
     {
       label: "View employees",
-      onClick: (row) =>
-        navigate(`/users?companyId=${row._id}`),
+      onClick: (row) => navigate(`/users?companyId=${row._id}`),
     },
   ];
 
