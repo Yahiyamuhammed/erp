@@ -16,6 +16,11 @@ const permissionsList = [
   { code: "UPDATE_ROLE", description: "Update role" },
   { code: "VIEW_ROLES", description: "View roles" },
 
+  // COMPANY
+  { code: "CREATE_COMPANY", description: "Create company" },
+  { code: "VIEW_COMPANY", description: "View companies" },
+  { code: "UPDATE_COMPANY", description: "Update company" },
+  
   // POS
   { code: "CREATE_POS_ORDER", description: "Create POS order" },
   { code: "HOLD_POS_ORDER", description: "Hold POS order" },
