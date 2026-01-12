@@ -1,54 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { toast } from "sonner";
+
 import DataTable from "@/components/common/DataTable/DataTable";
 import CompanyModal from "@/components/companies/CompanyModal";
 import { useCompanies } from "@/hooks/queries/useCompanies";
 import { useCreateCompany } from "@/hooks/mutations/useCreateCompany";
 import { useUpdateCompany } from "@/hooks/mutations/useUpdateCompany";
-import { toast } from "sonner";
+import {
+  createCompanySchema,
+  updateCompanySchema,
+} from "@/validations/company.schema";
+
+const EMPTY_FORM = {
+  name: "",
+  code: "",
+  gstNo: "",
+  isActive: true,
+};
 
 export default function CompaniesPage() {
   const navigate = useNavigate();
   const { data: companies = [], isLoading } = useCompanies();
-
   const { mutate: createCompany } = useCreateCompany();
   const { mutate: updateCompany } = useUpdateCompany();
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [openCreate, setOpenCreate] = useState(false);
 
-  const handleCreate = (form) => {
+  const isEdit = !!selectedCompany;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isDirty },
+  } = useForm({
+    resolver: yupResolver(isEdit ? updateCompanySchema : createCompanySchema),
+  });
+
+  useEffect(() => {
+    if (selectedCompany) {
+      reset({
+        name: selectedCompany.name,
+        code: selectedCompany.code,
+        gstNo: selectedCompany.gstNo || "",
+        isActive: selectedCompany.isActive,
+      });
+    } else {
+      reset(EMPTY_FORM);
+    }
+  }, [selectedCompany, reset]);
+
+  const handleCreate = (data) => {
     createCompany(
       {
-        name: form.name,
-        code: form.code,
-        gstNo: form.gstNo || null,
+        name: data.name,
+        code: data.code,
+        gstNo: data.gstNo || null,
       },
       {
         onSuccess: () => {
           toast.success("Company created successfully", {
-            description: "The company is now available for user assignment",
+            description: "The company is now available for use",
           });
+          setOpenCreate(false);
+          reset(EMPTY_FORM);
         },
-        onError: (error) => {
+        onError: (err) => {
           toast.error("Failed to create company", {
             description:
-              error?.response?.data?.message ||
-              "Please check the details and try again",
+              err?.response?.data?.message || "Unable to create company",
           });
         },
       }
     );
   };
 
-  const handleUpdate = (form) => {
+  const handleUpdate = (data) => {
     updateCompany(
       {
         companyId: selectedCompany._id,
         payload: {
-          name: form.name,
-          gstNo: form.gstNo || null,
-          isActive: form.isActive,
+          name: data.name,
+          gstNo: data.gstNo || null,
+          isActive: data.isActive,
         },
       },
       {
@@ -56,12 +94,12 @@ export default function CompaniesPage() {
           toast.success("Company updated successfully", {
             description: "Changes have been saved",
           });
+          setSelectedCompany(null);
         },
-        onError: (error) => {
+        onError: (err) => {
           toast.error("Failed to update company", {
             description:
-              error?.response?.data?.message ||
-              "Unable to save changes at the moment",
+              err?.response?.data?.message || "Unable to update company",
           });
         },
       }
@@ -112,15 +150,25 @@ export default function CompaniesPage() {
 
       <CompanyModal
         open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        onSubmit={handleCreate}
+        isEdit={false}
+        register={register}
+        errors={errors}
+        isDirty={isDirty}
+        onClose={() => {
+          setOpenCreate(false);
+          reset(EMPTY_FORM);
+        }}
+        onSubmit={handleSubmit(handleCreate)}
       />
 
       <CompanyModal
         open={!!selectedCompany}
-        company={selectedCompany}
+        isEdit
+        register={register}
+        errors={errors}
+        isDirty={isDirty}
         onClose={() => setSelectedCompany(null)}
-        onSubmit={handleUpdate}
+        onSubmit={handleSubmit(handleUpdate)}
       />
     </>
   );
