@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/common/Modal/Modal";
-import { useCreateCompany } from "@/hooks/mutations/useCreateCompany";
-import { useUpdateCompany } from "@/hooks/mutations/useUpdateCompany";
 
 const EMPTY_FORM = {
   name: "",
@@ -10,12 +8,17 @@ const EMPTY_FORM = {
   isActive: true,
 };
 
-export default function CompanyModal({ open, onClose, company }) {
+const INPUT_BASE =
+  "w-full px-3 py-2 rounded-md border border-gray-300 text-sm " +
+  "focus:outline-none focus:ring-2 focus:ring-[#D4F34A] focus:border-[#D4F34A]";
+
+export default function CompanyModal({
+  open,
+  onClose,
+  company,
+  onSubmit,
+}) {
   const isEdit = !!company;
-
-  const createCompany = useCreateCompany();
-  const updateCompany = useUpdateCompany();
-
   const [form, setForm] = useState(EMPTY_FORM);
 
   useEffect(() => {
@@ -55,23 +58,7 @@ export default function CompanyModal({ open, onClose, company }) {
     e.preventDefault();
     if (!isDirty) return;
 
-    if (isEdit) {
-      updateCompany.mutate({
-        companyId: company._id,
-        payload: {
-          name: form.name,
-          gstNo: form.gstNo || null,
-          isActive: form.isActive,
-        },
-      });
-    } else {
-      createCompany.mutate({
-        name: form.name,
-        code: form.code,
-        gstNo: form.gstNo || null,
-      });
-    }
-
+    onSubmit(form);
     onClose();
   };
 
@@ -84,28 +71,32 @@ export default function CompanyModal({ open, onClose, company }) {
       submitLabel={isEdit ? "Update" : "Create"}
     >
       <div className="space-y-5">
-        {/* Company name */}
         <div>
-          <label className="block text-sm font-medium mb-1">Company name</label>
+          <label className="block text-sm font-medium mb-1">
+            Company name
+          </label>
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="input w-full"
+            className={INPUT_BASE}
             placeholder="Acme Corporation"
           />
         </div>
 
-        {/* Company code */}
         <div>
-          <label className="block text-sm font-medium mb-1">Company code</label>
+          <label className="block text-sm font-medium mb-1">
+            Company code
+          </label>
           <input
             name="code"
             value={form.code}
             onChange={handleChange}
             disabled={isEdit}
-            className={`input w-full ${
-              isEdit ? "bg-gray-100 cursor-not-allowed" : ""
+            className={`${INPUT_BASE} ${
+              isEdit
+                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                : ""
             }`}
             placeholder="ACME"
           />
@@ -122,7 +113,6 @@ export default function CompanyModal({ open, onClose, company }) {
           )}
         </div>
 
-        {/* GST */}
         <div>
           <label className="block text-sm font-medium mb-1">
             GST number (optional)
@@ -131,12 +121,11 @@ export default function CompanyModal({ open, onClose, company }) {
             name="gstNo"
             value={form.gstNo}
             onChange={handleChange}
-            className="input w-full"
+            className={INPUT_BASE}
             placeholder="29ABCDE1234F1Z5"
           />
         </div>
 
-        {/* Status */}
         {isEdit && (
           <label className="flex items-center gap-2 text-sm pt-1">
             <input
@@ -150,7 +139,6 @@ export default function CompanyModal({ open, onClose, company }) {
         )}
       </div>
 
-      {/* Footer hint */}
       {isEdit && !isDirty && (
         <p className="text-xs text-gray-400 text-right pt-2">
           No changes to save

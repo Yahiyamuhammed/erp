@@ -1,15 +1,39 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DataTable from "@/components/common/DataTable/DataTable";
-import { useCompanies } from "@/hooks/queries/useCompanies";
 import CompanyModal from "@/components/companies/CompanyModal";
+import { useCompanies } from "@/hooks/queries/useCompanies";
+import { useCreateCompany } from "@/hooks/mutations/useCreateCompany";
+import { useUpdateCompany } from "@/hooks/mutations/useUpdateCompany";
 
 export default function CompaniesPage() {
   const navigate = useNavigate();
   const { data: companies = [], isLoading } = useCompanies();
 
+  const createCompany = useCreateCompany();
+  const updateCompany = useUpdateCompany();
+
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [openCreate, setOpenCreate] = useState(false);
+
+  const handleCreate = (form) => {
+    createCompany.mutate({
+      name: form.name,
+      code: form.code,
+      gstNo: form.gstNo || null,
+    });
+  };
+
+  const handleUpdate = (form) => {
+    updateCompany.mutate({
+      companyId: selectedCompany._id,
+      payload: {
+        name: form.name,
+        gstNo: form.gstNo || null,
+        isActive: form.isActive,
+      },
+    });
+  };
 
   const columns = [
     { key: "name", label: "Company" },
@@ -58,12 +82,14 @@ export default function CompaniesPage() {
       <CompanyModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
+        onSubmit={handleCreate}
       />
 
       <CompanyModal
         open={!!selectedCompany}
         company={selectedCompany}
         onClose={() => setSelectedCompany(null)}
+        onSubmit={handleUpdate}
       />
     </>
   );
