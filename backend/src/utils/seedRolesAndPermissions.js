@@ -4,6 +4,10 @@ import Permission from "../models/Permission.js";
 import Role from "../models/Role.js";
 
 dotenv.config();
+const permissionSchema = new mongoose.Schema({
+  code: { type: String, required: true, unique: true },
+  description: String,
+});
 
 const permissionsList = [
   // AUTH / SYSTEM
@@ -20,7 +24,7 @@ const permissionsList = [
   { code: "CREATE_COMPANY", description: "Create company" },
   { code: "VIEW_COMPANY", description: "View companies" },
   { code: "UPDATE_COMPANY", description: "Update company" },
-  
+
   // POS
   { code: "CREATE_POS_ORDER", description: "Create POS order" },
   { code: "HOLD_POS_ORDER", description: "Hold POS order" },
@@ -76,20 +80,24 @@ const permissionsList = [
   // SETTINGS
   { code: "UPDATE_COMPANY_SETTINGS", description: "Update company settings" },
   { code: "CONFIGURE_TAX", description: "Configure tax" },
-  { code: "CONFIGURE_POS", description: "Configure POS" }
+  { code: "CONFIGURE_POS", description: "Configure POS" },
 ];
 
-
 const seedPermissions = async () => {
-  const existing = await Permission.find({});
-  if (existing.length > 0) {
-    console.log("Permissions already seeded");
-    return existing;
-  }
+  const ops = permissionsList.map((p) => ({
+    updateOne: {
+      filter: { code: p.code },
+      update: { $setOnInsert: p },
+      upsert: true,
+    },
+  }));
 
-  const created = await Permission.insertMany(permissionsList);
-  console.log("Permissions seeded");
-  return created;
+  await Permission.bulkWrite(ops);
+
+  const permissions = await Permission.find({});
+  console.log("Permissions synced");
+
+  return permissions;
 };
 
 const rolePermissionMap = {
@@ -110,7 +118,7 @@ const rolePermissionMap = {
     "VIEW_BALANCE_SHEET",
     "UPDATE_COMPANY_SETTINGS",
     "CONFIGURE_TAX",
-    "CONFIGURE_POS"
+    "CONFIGURE_POS",
   ],
 
   ACCOUNTANT: [
@@ -124,7 +132,7 @@ const rolePermissionMap = {
     "VIEW_INVOICE",
     "PAY_VENDOR",
     "VIEW_REPORTS",
-    "EXPORT_REPORT"
+    "EXPORT_REPORT",
   ],
 
   INVENTORY_MANAGER: [
@@ -135,7 +143,7 @@ const rolePermissionMap = {
     "VIEW_STOCK",
     "CREATE_PURCHASE_ORDER",
     "RECEIVE_GOODS",
-    "VIEW_PURCHASE"
+    "VIEW_PURCHASE",
   ],
 
   SALES: [
@@ -145,7 +153,7 @@ const rolePermissionMap = {
     "VIEW_POS_ORDERS",
     "CREATE_SALES_ORDER",
     "VIEW_SALES_ORDER",
-    "APPLY_DISCOUNT"
+    "APPLY_DISCOUNT",
   ],
 
   HR_PAYROLL_MANAGER: [
@@ -154,7 +162,7 @@ const rolePermissionMap = {
     "VIEW_EMPLOYEE",
     "TRACK_ATTENDANCE",
     "PROCESS_PAYROLL",
-    "VIEW_PAYROLL_REPORT"
+    "VIEW_PAYROLL_REPORT",
   ],
 
   VIEWER: [
@@ -162,8 +170,8 @@ const rolePermissionMap = {
     "VIEW_SALES_ORDER",
     "VIEW_PURCHASE",
     "VIEW_PRODUCT",
-    "VIEW_EMPLOYEE"
-  ]
+    "VIEW_EMPLOYEE",
+  ],
 };
 
 const seedRoles = async (permissions) => {
@@ -173,19 +181,35 @@ const seedRoles = async (permissions) => {
   });
 
   for (const roleName in rolePermissionMap) {
+    if (roleName === "SUPER_ADMIN") {
+      await Role.updateOne(
+        { name: "SUPER_ADMIN" },
+        {
+          $set: {
+            name: "SUPER_ADMIN",
+            permissions: Object.values(permissionMap),
+          },
+        },
+        { upsert: true }
+      );
+
+      console.log("SUPER_ADMIN permissions synced");
+      continue;
+    }
+
     const exists = await Role.findOne({ name: roleName });
     if (exists) {
       console.log(`Role ${roleName} already exists`);
       continue;
     }
 
-    const permissionIds = rolePermissionMap[roleName].map(
-      (code) => permissionMap[code]
-    );
+    const permissionIds = rolePermissionMap[roleName]
+      .map((code) => permissionMap[code])
+      .filter(Boolean);
 
     await Role.create({
       name: roleName,
-      permissions: permissionIds
+      permissions: permissionIds,
     });
 
     console.log(`Role ${roleName} created`);
@@ -194,7 +218,7 @@ const seedRoles = async (permissions) => {
 
 const runSeed = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect("mongodb://127.0.0.1:27017/erp");
 
     const permissions = await seedPermissions();
     await seedRoles(permissions);
