@@ -13,12 +13,7 @@ const INPUT_BASE =
   "w-full px-3 py-2 rounded-md border border-gray-300 text-sm " +
   "focus:outline-none focus:ring-2 focus:ring-[#D4F34A] focus:border-[#D4F34A]";
 
-export default function CompanyModal({
-  open,
-  onClose,
-  company,
-  onSubmit,
-}) {
+export default function CompanyModal({ open, onClose, company, onSubmit }) {
   const isEdit = !!company;
   const [form, setForm] = useState(EMPTY_FORM);
 
@@ -56,19 +51,19 @@ export default function CompanyModal({
   };
 
   const handleSubmit = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!isDirty) {
-    toast.info("No changes made", {
-      description: "The company details are already up to date",
-    });
+    if (!isDirty) {
+      toast.info("No changes made", {
+        description: "The company details are already up to date",
+      });
+      onClose();
+      return;
+    }
+
+    onSubmit(form);
     onClose();
-    return;
-  }
-
-  onSubmit(form);
-  onClose();
-};
+  };
 
   return (
     <Modal
@@ -80,9 +75,7 @@ export default function CompanyModal({
     >
       <div className="space-y-5">
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Company name
-          </label>
+          <label className="block text-sm font-medium mb-1">Company name</label>
           <input
             name="name"
             value={form.name}
@@ -93,18 +86,14 @@ export default function CompanyModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Company code
-          </label>
+          <label className="block text-sm font-medium mb-1">Company code</label>
           <input
             name="code"
             value={form.code}
             onChange={handleChange}
             disabled={isEdit}
             className={`${INPUT_BASE} ${
-              isEdit
-                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : ""
+              isEdit ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
             }`}
             placeholder="ACME"
           />

@@ -18,56 +18,55 @@ export default function CompaniesPage() {
   const [openCreate, setOpenCreate] = useState(false);
 
   const handleCreate = (form) => {
-  createCompany(
-    {
-      name: form.name,
-      code: form.code,
-      gstNo: form.gstNo || null,
-    },
-    {
-      onSuccess: () => {
-        toast.success("Company created successfully", {
-          description: "The company is now available for user assignment",
-        });
+    createCompany(
+      {
+        name: form.name,
+        code: form.code,
+        gstNo: form.gstNo || null,
       },
-      onError: (error) => {
-        toast.error("Failed to create company", {
-          description:
-            error?.response?.data?.message ||
-            "Please check the details and try again",
-        });
-      },
-    }
-  );
-};
+      {
+        onSuccess: () => {
+          toast.success("Company created successfully", {
+            description: "The company is now available for user assignment",
+          });
+        },
+        onError: (error) => {
+          toast.error("Failed to create company", {
+            description:
+              error?.response?.data?.message ||
+              "Please check the details and try again",
+          });
+        },
+      }
+    );
+  };
 
   const handleUpdate = (form) => {
-  updateCompany(
-    {
-      companyId: selectedCompany._id,
-      payload: {
-        name: form.name,
-        gstNo: form.gstNo || null,
-        isActive: form.isActive,
+    updateCompany(
+      {
+        companyId: selectedCompany._id,
+        payload: {
+          name: form.name,
+          gstNo: form.gstNo || null,
+          isActive: form.isActive,
+        },
       },
-    },
-    {
-      onSuccess: () => {
-        toast.success("Company updated successfully", {
-          description: "Changes have been saved",
-        });
-      },
-      onError: (error) => {
-        toast.error("Failed to update company", {
-          description:
-            error?.response?.data?.message ||
-            "Unable to save changes at the moment",
-        });
-      },
-    }
-  );
-};
-
+      {
+        onSuccess: () => {
+          toast.success("Company updated successfully", {
+            description: "Changes have been saved",
+          });
+        },
+        onError: (error) => {
+          toast.error("Failed to update company", {
+            description:
+              error?.response?.data?.message ||
+              "Unable to save changes at the moment",
+          });
+        },
+      }
+    );
+  };
 
   const columns = [
     { key: "name", label: "Company" },
