@@ -22,13 +22,12 @@ export const createCompanySchema = yup.object({
 
   gstNo: yup
     .string()
-    .trim()
+    .transform((value) => (value === "" ? null : value))
     .nullable()
-    .matches(
-      /^[0-9A-Z]{15}$/,
-      "GST number must be 15 characters"
-    )
-    .nullable(),
+    .matches(/^[0-9A-Z]{15}$/, {
+      message: "GST number must be 15 characters",
+      excludeEmptyString: true,
+    }),
 });
 
 export const updateCompanySchema = yup.object({
@@ -41,13 +40,12 @@ export const updateCompanySchema = yup.object({
 
   gstNo: yup
     .string()
-    .trim()
+    .transform((value) => (value === "" ? null : value))
     .nullable()
-    .matches(
-      /^[0-9A-Z]{15}$/,
-      "GST number must be 15 characters"
-    )
-    .nullable(),
+    .matches(/^[0-9A-Z]{15}$/, {
+      message: "GST number must be 15 characters",
+      excludeEmptyString: true,
+    }),
 
   isActive: yup.boolean(),
 });
