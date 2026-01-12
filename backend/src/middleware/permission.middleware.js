@@ -2,14 +2,22 @@ import User from "../models/User.js";
 
 const checkPermission = (permissionCode) => {
   return async (req, res, next) => {
-    const user = await User.findById(req.user.id).populate({
+    if (req.user.isSuperAdmin) {
+      return next();
+    }
+
+    const user = await User.findOne({
+      _id: req.user.id,
+      companyId: req.companyId,
+      isActive: true,
+    }).populate({
       path: "roleId",
       populate: {
-        path: "permissions"
-      }
+        path: "permissions",
+      },
     });
 
-    if (!user || !user.isActive) {
+    if (!user || !user.roleId) {
       return res.status(403).json({ message: "Access denied" });
     }
 
