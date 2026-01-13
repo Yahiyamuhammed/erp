@@ -1,21 +1,27 @@
 import Company from "../models/Company.js";
+import { seedCompanyRoles } from "../services/company.service.js";
 
 export const createCompany = async (req, res) => {
   const { name, code, gstNo } = req.body;
 
-  const existingCompany = await Company.findOne({ code });
-  if (existingCompany) {
-    return res.status(400).json({ message: "Company code already exists" });
+  const existing = await Company.findOne({ code });
+  if (existing) {
+    return res.status(409).json({
+      message: "Company code already exists",
+    });
   }
 
   const company = await Company.create({
     name,
     code,
-    gstNo: gstNo || null,
+    gstNo,
   });
+
+  await seedCompanyRoles(company._id);
 
   res.status(201).json({
     message: "Company created successfully",
+    company,
   });
 };
 
