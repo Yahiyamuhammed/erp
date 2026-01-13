@@ -1,3 +1,4 @@
+import Permission from "../models/Permission.js";
 import Role from "../models/Role.js";
 import { rolePermissionMap } from "../seeds/roles.seed.js";
 
