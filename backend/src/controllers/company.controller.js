@@ -3,7 +3,7 @@ import { seedCompanyRoles } from "../services/company.service.js";
 
 export const createCompany = async (req, res) => {
   const { name, code, gstNo } = req.body;
-
+  
   const existing = await Company.findOne({ code });
   if (existing) {
     return res.status(409).json({

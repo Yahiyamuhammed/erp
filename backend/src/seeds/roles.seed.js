@@ -1,3 +1,5 @@
+import { permissionsList } from "./permissions.seed.js";
+
 export const rolePermissionMap = {
   SUPER_ADMIN: permissionsList.map((p) => p.code),
 
