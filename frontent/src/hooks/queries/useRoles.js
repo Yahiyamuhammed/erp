@@ -6,7 +6,7 @@ export const useRoles = () => {
     queryKey: ["roles"],
     queryFn: async () => {
       const { data } = await api.get("/roles");
-      return data;
+      return data.roles;
     }
   });
 };
