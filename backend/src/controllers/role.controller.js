@@ -36,7 +36,6 @@ export const getRoleById = async (req, res) => {
       message: "Role not found or access denied",
     });
   }
-
   res.status(200).json({ role });
 };
 export const updateRolePermissions = async (req, res) => {
