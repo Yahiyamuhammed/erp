@@ -1,5 +1,6 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
+import { companyContext } from "../middleware/company.middleware.js";
 import checkPermission from "../middleware/permission.middleware.js";
 import {
   createUser,
@@ -14,17 +15,27 @@ import {
 
 const router = express.Router();
 
-router.get("/", authMiddleware, checkPermission("VIEW_USERS"), getUsers);
+router.get(
+  "/",
+  authMiddleware,
+  companyContext,
+  checkPermission("VIEW_USERS"),
+  getUsers
+);
+
 router.post(
   "/",
   authMiddleware,
+  companyContext,
   checkPermission("CREATE_USER"),
   validate(createUserSchema),
   createUser
 );
+
 router.put(
   "/:userId",
   authMiddleware,
+  companyContext,
   checkPermission("UPDATE_USER"),
   validate(updateUserSchema),
   updateUser
