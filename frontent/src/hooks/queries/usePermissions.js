@@ -1,7 +1,7 @@
 import api from "@/api/axios";
 import { useQuery } from "@tanstack/react-query";
 
-export const usePermissions = () => {
+export const usePermissions = (companyId) => {
   return useQuery({
     queryKey: ["permissions"],
     queryFn: async () => {

@@ -5,12 +5,19 @@ import { useRoleById } from "@/hooks/queries/useRoles";
 import { useUpdateRolePermissions } from "@/hooks/mutations/useUpdateRolePermissions";
 import Modal from "../common/Modal/Modal";
 import { XCircle } from "lucide-react";
+import { toast } from "sonner";
 
-export default function RolePermissionModal({ roleId, open, onClose }) {
-  const { data: role } = useRoleById(roleId);
-  const { data: allPermissions = [] } = usePermissions();
-  const updatePermissions = useUpdateRolePermissions();
-  //   console.log(allPermissions,role)
+export default function RolePermissionModal({
+  roleId,
+  open,
+  onClose,
+  companyId,
+}) {
+  const { data: role } = useRoleById(roleId, companyId);
+  const { data: allPermissions = [] } = usePermissions(companyId);
+  const updatePermissions = useUpdateRolePermissions(companyId);
+  // console.log(allPermissions);
+  
 
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [search, setSearch] = useState("");
@@ -39,10 +46,26 @@ export default function RolePermissionModal({ roleId, open, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    updatePermissions.mutate({
-      roleId,
-      permissionIds: selectedPermissions,
-    });
+    console.log(selectedPermissions)
+
+    updatePermissions.mutate(
+      {
+        roleId,
+        permissionIds: selectedPermissions,
+      },
+      {
+        onSuccess: () => {
+          toast.success("permissions updated successfully");
+        },
+
+        onError: (err) => {
+          console.log(err)
+          toast.error("Failed to update permissions", {
+            description: err?.response?.data?.message || "Something went wrong",
+          });
+        },
+      }
+    );
 
     onClose();
   };
