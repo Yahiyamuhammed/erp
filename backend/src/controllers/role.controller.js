@@ -3,9 +3,7 @@ import Role from "../models/Role.js";
 import { rolePermissionMap } from "../seeds/roles.seed.js";
 
 export const getRoles = async (req, res) => {
-  const filter = req.user.isSuperAdmin ? {} : { companyId: req.companyId };
-
-  const roles = await Role.find(filter)
+  const roles = await Role.find({ companyId: req.companyId })
     .select("name createdAt permissions")
     .lean();
 
@@ -22,14 +20,10 @@ export const getRoles = async (req, res) => {
 export const getRoleById = async (req, res) => {
   const { roleId } = req.params;
 
-  const filter = req.user.isSuperAdmin
-    ? { _id: roleId }
-    : { _id: roleId, companyId: req.companyId };
-
-  const role = await Role.findOne(filter).populate(
-    "permissions",
-    "name description"
-  );
+  const role = await Role.findOne({
+    _id: roleId,
+    companyId: req.companyId,
+  }).populate("permissions", "name description");
 
   if (!role) {
     return res.status(404).json({
@@ -41,10 +35,9 @@ export const getRoleById = async (req, res) => {
 export const updateRolePermissions = async (req, res) => {
   const { roleId } = req.params;
   const { permissionIds } = req.body;
-
   const role = await Role.findOne({
     _id: roleId,
-    companyId: req.user.isSuperAdmin ? undefined : req.companyId,
+    companyId: req.companyId,
   });
 
   if (!role) {
