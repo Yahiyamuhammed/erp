@@ -53,10 +53,9 @@ export const createUser = async (req, res) => {
 };
 
 export const getUsers = async (req, res) => {
-  const filter = req.user.isSuperAdmin ? {} : { companyId: req.companyId };
 
   const users = await User.find({
-    ...filter,
+    companyId: req.companyId,
     isActive: true,
   })
     .select("name email isActive roleId createdAt")
@@ -73,7 +72,7 @@ export const updateUser = async (req, res) => {
     ? { _id: userId }
     : { _id: userId, companyId: req.companyId };
 
-  const user = await User.findOne(filter);
+  const user = await User.findOne({ _id: userId, companyId: req.companyId });
 
   if (!user || !user.isActive) {
     return res.status(404).json({
