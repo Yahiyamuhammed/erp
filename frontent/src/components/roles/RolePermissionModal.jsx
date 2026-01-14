@@ -14,9 +14,8 @@ export default function RolePermissionModal({
   companyId,
 }) {
   const { data: role } = useRoleById(roleId, companyId);
-  const { data: allPermissions = [] } = usePermissions(companyId);
+  const { data: allPermissions = [] } = usePermissions(companyId,roleId,open);
   const updatePermissions = useUpdateRolePermissions(companyId);
-  // console.log(allPermissions);
   
 
   const [selectedPermissions, setSelectedPermissions] = useState([]);
