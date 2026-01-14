@@ -9,6 +9,7 @@ export const rolePermissionMap = {
     "UPDATE_USER",
     "DEACTIVATE_USER",
     "VIEW_ROLES",
+    "UPDATE_ROLE",
     "VIEW_REPORTS",
     "EXPORT_REPORT",
     "APPROVE_SALES_ORDER",
