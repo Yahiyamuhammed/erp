@@ -3,11 +3,9 @@ import User from "../models/User.js";
 import Role from "../models/Role.js";
 
 export const createUser = async (req, res) => {
-  const { name, email, password, roleId, companyId } = req.body;
+  const { name, email, password, roleId } = req.body;
 
-  const finalCompanyId = req.user.isSuperAdmin ? companyId : req.companyId;
-
-  if (!finalCompanyId) {
+  if (!req.companyId) {
     return res.status(400).json({
       message: "Company is required to create user",
     });
@@ -15,7 +13,7 @@ export const createUser = async (req, res) => {
 
   const existingUser = await User.findOne({
     email,
-    companyId: finalCompanyId,
+    companyId: req.companyId,
   });
 
   if (existingUser) {
@@ -26,7 +24,7 @@ export const createUser = async (req, res) => {
 
   const role = await Role.findOne({
     _id: roleId,
-    companyId: finalCompanyId,
+    companyId: req.companyId,
   });
 
   if (!role) {
@@ -42,7 +40,7 @@ export const createUser = async (req, res) => {
     email,
     password: hashedPassword,
     roleId,
-    companyId: finalCompanyId,
+    companyId: req.companyId,
     isSuperAdmin: false,
   });
 
@@ -53,7 +51,6 @@ export const createUser = async (req, res) => {
 };
 
 export const getUsers = async (req, res) => {
-
   const users = await User.find({
     companyId: req.companyId,
     isActive: true,
@@ -67,10 +64,6 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
   const { userId } = req.params;
   const { name, email, password, roleId } = req.body;
-
-  const filter = req.user.isSuperAdmin
-    ? { _id: userId }
-    : { _id: userId, companyId: req.companyId };
 
   const user = await User.findOne({ _id: userId, companyId: req.companyId });
 
