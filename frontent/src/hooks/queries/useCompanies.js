@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/api/axios";
 
-export const useCompanies = () => {
+export const useCompanies = (companyId) => {
   return useQuery({
     queryKey: ["companies"],
     queryFn: async () => {
