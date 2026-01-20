@@ -26,12 +26,16 @@ import { useUpdateUser } from "@/hooks/mutations/useUpdateUser";
 import DataTable from "@/components/common/DataTable/DataTable";
 import UserFormModal from "@/components/users/UserFormModal";
 import RolesPage from "../roles/RolesPage";
+import { useSearchParams } from "react-router-dom";
 
 const UserManagementPage = () => {
-  const { data: users = [], isLoading } = useUsers();
-  const { data: roles = [] } = useRoles();
-  const createUserMutation = useCreateUser();
-  const updateUserMutation = useUpdateUser();
+  const [searchParams] = useSearchParams();
+  const companyId = searchParams.get("companyId");
+
+  const { data: users = [], isLoading } = useUsers(companyId);
+  const { data: roles = [] } = useRoles(companyId);
+  const createUserMutation = useCreateUser(companyId);
+  const updateUserMutation = useUpdateUser(companyId);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -121,6 +125,7 @@ const UserManagementPage = () => {
             setCurrentUser(null);
           },
           onError: (err) => {
+            console.log(err)
             toast.error("Failed to update user", {
               id: toastId,
               description:

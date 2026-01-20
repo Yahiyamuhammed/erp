@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    companyCode: "",
   });
 
   const handleSubmit = (e) => {
@@ -26,6 +27,7 @@ export default function LoginPage() {
       {
         email: formData.email,
         password: formData.password,
+        companyCode: formData.companyCode,
       },
       {
         onSuccess: (data) => {
@@ -72,6 +74,27 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 ml-1">
+                Company Code
+              </label>
+              <div className="relative group">
+                <input
+                  type="text"
+                  placeholder="Enter company code"
+                  className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl uppercase focus:outline-none focus:ring-2 focus:ring-[#D4F34A]"
+                  value={formData.companyCode}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      companyCode: e.target.value.toUpperCase(),
+                    })
+                  }
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 ml-1">
                 Email Address

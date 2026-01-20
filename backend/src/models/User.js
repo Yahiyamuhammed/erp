@@ -2,23 +2,49 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name: String,
+    name: {
+      type: String,
+      trim: true,
+    },
+
     email: {
       type: String,
-      unique: true
+      required: true,
+      trim: true,
     },
-    password: String,
+
+    password: {
+      type: String,
+      required: true,
+    },
+
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: function () {
+        return !this.isSuperAdmin;
+      },
+    },
+
     roleId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Role"
+      ref: "Role",
+      required: true,
     },
+
     isActive: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
+
+    isSuperAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("User", userSchema);
+userSchema.index({ email: 1, companyId: 1 }, { unique: true });
 
+export default mongoose.model("User", userSchema);

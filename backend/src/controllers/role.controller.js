@@ -1,7 +1,12 @@
+import Permission from "../models/Permission.js";
 import Role from "../models/Role.js";
+import { rolePermissionMap } from "../seeds/roles.seed.js";
 
 export const getRoles = async (req, res) => {
-  const roles = await Role.find({}, { name: 1, createdAt: 1, permissions: 1 });
+  const roles = await Role.find({ companyId: req.companyId })
+    .select("name createdAt permissions")
+    .lean();
+
   const formattedRoles = roles.map((role) => ({
     _id: role._id,
     name: role.name,
@@ -9,46 +14,62 @@ export const getRoles = async (req, res) => {
     permissionCount: role.permissions.length,
   }));
 
-  res.json(formattedRoles);
+  res.status(200).json({ roles: formattedRoles });
 };
+
 export const getRoleById = async (req, res) => {
   const { roleId } = req.params;
 
-  const role = await Role.findById(roleId).populate(
-    "permissions",
-    "name description"
-  );
+  const role = await Role.findOne({
+    _id: roleId,
+    companyId: req.companyId,
+  }).populate("permissions", "name description");
 
   if (!role) {
-    return res.status(404).json({ message: "Role not found" });
+    return res.status(404).json({
+      message: "Role not found or access denied",
+    });
   }
-
-  res.json({ role });
+  res.status(200).json({ role });
 };
-
 export const updateRolePermissions = async (req, res) => {
   const { roleId } = req.params;
   const { permissionIds } = req.body;
+  const role = await Role.findOne({
+    _id: roleId,
+    companyId: req.companyId,
+  });
 
-  if (!Array.isArray(permissionIds)) {
-    return res.status(400).json({ message: "permissionIds must be an array" });
+  if (!role) {
+    return res.status(404).json({
+      message: "Role not found or access denied",
+    });
   }
 
-  const role = await Role.findById(roleId);
-  if (!role) {
-    return res.status(404).json({ message: "Role not found" });
+  if (role.companyId === null) {
+    return res.status(403).json({
+      message: "System roles cannot be modified",
+    });
+  }
+
+  const allowedCodes = rolePermissionMap[role.name] || [];
+
+  const permissions = await Permission.find({
+    _id: { $in: permissionIds },
+  });
+
+  const invalid = permissions.some((p) => !allowedCodes.includes(p.code));
+
+  if (invalid) {
+    return res.status(400).json({
+      message: "One or more permissions are not allowed for this role",
+    });
   }
 
   role.permissions = permissionIds;
   await role.save();
 
-  const updatedRole = await Role.findById(roleId).populate(
-    "permissions",
-    "name description"
-  );
-
-  res.json({
-    message: "Permissions updated successfully",
-    role: updatedRole,
+  res.status(200).json({
+    message: "Role permissions updated successfully",
   });
 };

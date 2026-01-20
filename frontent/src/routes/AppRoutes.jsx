@@ -7,6 +7,7 @@ import PermissionRoute from "@/components/protected/PermissionRoute";
 import UserManagementPage from "@/pages/users/UserManagementPage";
 import UnauthorizedPage from "@/pages/errors/Unauthorized";
 import NotFoundPage from "@/pages/errors/NotFound";
+import CompaniesPage from "@/pages/companies/CompaniesPage";
 
 export default function AppRoutes() {
   return (
@@ -32,6 +33,14 @@ export default function AppRoutes() {
           element={
             <PermissionRoute permission="VIEW_USERS">
               <UserManagementPage />
+            </PermissionRoute>
+          }
+        />
+        <Route
+          path="/companies"
+          element={
+            <PermissionRoute permission="VIEW_COMPANY">
+              <CompaniesPage />
             </PermissionRoute>
           }
         />

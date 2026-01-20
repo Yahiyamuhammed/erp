@@ -4,9 +4,13 @@ import { useState } from "react";
 import { useRoles } from "@/hooks/queries/useRoles";
 import DataTable from "@/components/common/DataTable/DataTable";
 import RolePermissionModal from "@/components/roles/RolePermissionModal";
+import { useSearchParams } from "react-router-dom";
 
 export default function RolesPage() {
-  const { data: roles = [], isLoading } = useRoles();
+  const [searchParams] = useSearchParams();
+  const companyId = searchParams.get("companyId");
+
+  const { data: roles = [], isLoading } = useRoles(companyId);
   const [selectedRoleId, setSelectedRoleId] = useState(null);
   const columns = [
     {
@@ -20,15 +24,14 @@ export default function RolesPage() {
     {
       key: "createdAt",
       label: "Created",
-      render: row =>
-        new Date(row.createdAt).toLocaleDateString(),
+      render: (row) => new Date(row.createdAt).toLocaleDateString(),
     },
   ];
 
   const actions = [
     {
       label: "Manage permissions",
-      onClick: row => setSelectedRoleId(row._id),
+      onClick: (row) => setSelectedRoleId(row._id),
     },
   ];
 
@@ -45,6 +48,7 @@ export default function RolesPage() {
       />
 
       <RolePermissionModal
+        companyId={companyId}
         roleId={selectedRoleId}
         open={!!selectedRoleId}
         onClose={() => setSelectedRoleId(null)}

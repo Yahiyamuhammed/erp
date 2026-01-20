@@ -1,16 +1,6 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
 import Permission from "../models/Permission.js";
-import Role from "../models/Role.js";
 
-dotenv.config();
-const permissionSchema = new mongoose.Schema({
-  code: { type: String, required: true, unique: true },
-  description: String,
-});
-
-const permissionsList = [
-  // AUTH / SYSTEM
+export const permissionsList = [
   { code: "CREATE_USER", description: "Create user" },
   { code: "UPDATE_USER", description: "Update user" },
   { code: "DEACTIVATE_USER", description: "Deactivate user" },
@@ -81,9 +71,10 @@ const permissionsList = [
   { code: "UPDATE_COMPANY_SETTINGS", description: "Update company settings" },
   { code: "CONFIGURE_TAX", description: "Configure tax" },
   { code: "CONFIGURE_POS", description: "Configure POS" },
+
 ];
 
-const seedPermissions = async () => {
+export const seedPermissions = async () => {
   const ops = permissionsList.map((p) => ({
     updateOne: {
       filter: { code: p.code },
@@ -95,140 +86,5 @@ const seedPermissions = async () => {
   await Permission.bulkWrite(ops);
 
   const permissions = await Permission.find({});
-  console.log("Permissions synced");
-
   return permissions;
 };
-
-const rolePermissionMap = {
-  SUPER_ADMIN: permissionsList.map((p) => p.code),
-
-  ADMIN: [
-    "VIEW_USERS",
-    "CREATE_USER",
-    "UPDATE_USER",
-    "DEACTIVATE_USER",
-    "VIEW_ROLES",
-    "VIEW_REPORTS",
-    "EXPORT_REPORT",
-    "APPROVE_SALES_ORDER",
-    "APPROVE_PURCHASE_ORDER",
-    "VIEW_LEDGER",
-    "VIEW_PNL",
-    "VIEW_BALANCE_SHEET",
-    "UPDATE_COMPANY_SETTINGS",
-    "CONFIGURE_TAX",
-    "CONFIGURE_POS",
-  ],
-
-  ACCOUNTANT: [
-    "VIEW_LEDGER",
-    "CREATE_JOURNAL",
-    "REVERSE_JOURNAL",
-    "VIEW_PNL",
-    "VIEW_BALANCE_SHEET",
-    "VIEW_TRIAL_BALANCE",
-    "CREATE_INVOICE",
-    "VIEW_INVOICE",
-    "PAY_VENDOR",
-    "VIEW_REPORTS",
-    "EXPORT_REPORT",
-  ],
-
-  INVENTORY_MANAGER: [
-    "CREATE_PRODUCT",
-    "UPDATE_PRODUCT",
-    "VIEW_PRODUCT",
-    "ADJUST_STOCK",
-    "VIEW_STOCK",
-    "CREATE_PURCHASE_ORDER",
-    "RECEIVE_GOODS",
-    "VIEW_PURCHASE",
-  ],
-
-  SALES: [
-    "CREATE_POS_ORDER",
-    "HOLD_POS_ORDER",
-    "SCAN_BARCODE",
-    "VIEW_POS_ORDERS",
-    "CREATE_SALES_ORDER",
-    "VIEW_SALES_ORDER",
-    "APPLY_DISCOUNT",
-  ],
-
-  HR_PAYROLL_MANAGER: [
-    "CREATE_EMPLOYEE",
-    "UPDATE_EMPLOYEE",
-    "VIEW_EMPLOYEE",
-    "TRACK_ATTENDANCE",
-    "PROCESS_PAYROLL",
-    "VIEW_PAYROLL_REPORT",
-  ],
-
-  VIEWER: [
-    "VIEW_REPORTS",
-    "VIEW_SALES_ORDER",
-    "VIEW_PURCHASE",
-    "VIEW_PRODUCT",
-    "VIEW_EMPLOYEE",
-  ],
-};
-
-const seedRoles = async (permissions) => {
-  const permissionMap = {};
-  permissions.forEach((p) => {
-    permissionMap[p.code] = p._id;
-  });
-
-  for (const roleName in rolePermissionMap) {
-    if (roleName === "SUPER_ADMIN") {
-      await Role.updateOne(
-        { name: "SUPER_ADMIN" },
-        {
-          $set: {
-            name: "SUPER_ADMIN",
-            permissions: Object.values(permissionMap),
-          },
-        },
-        { upsert: true }
-      );
-
-      console.log("SUPER_ADMIN permissions synced");
-      continue;
-    }
-
-    const exists = await Role.findOne({ name: roleName });
-    if (exists) {
-      console.log(`Role ${roleName} already exists`);
-      continue;
-    }
-
-    const permissionIds = rolePermissionMap[roleName]
-      .map((code) => permissionMap[code])
-      .filter(Boolean);
-
-    await Role.create({
-      name: roleName,
-      permissions: permissionIds,
-    });
-
-    console.log(`Role ${roleName} created`);
-  }
-};
-
-const runSeed = async () => {
-  try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/erp");
-
-    const permissions = await seedPermissions();
-    await seedRoles(permissions);
-
-    console.log("Seeding completed");
-    process.exit();
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
-};
-
-runSeed();

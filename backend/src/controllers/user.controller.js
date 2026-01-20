@@ -1,18 +1,36 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import Role from "../models/Role.js";
 
 export const createUser = async (req, res) => {
   const { name, email, password, roleId } = req.body;
 
-  if (!name || !email || !password || !roleId) {
+  if (!req.companyId) {
     return res.status(400).json({
-      message: "All fields (name, email, password, roleId) are required",
+      message: "Company is required to create user",
     });
   }
 
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({
+    email,
+    companyId: req.companyId,
+  });
+
   if (existingUser) {
-    return res.status(400).json({ message: "User already exists" });
+    return res.status(400).json({
+      message: "User already exists in this company",
+    });
+  }
+
+  const role = await Role.findOne({
+    _id: roleId,
+    companyId: req.companyId,
+  });
+
+  if (!role) {
+    return res.status(400).json({
+      message: "Invalid role for this company",
+    });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,57 +40,67 @@ export const createUser = async (req, res) => {
     email,
     password: hashedPassword,
     roleId,
+    companyId: req.companyId,
+    isSuperAdmin: false,
   });
 
   res.status(201).json({
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    roleId: user.roleId,
+    message: "User created successfully",
+    userId: user._id,
   });
 };
+
 export const getUsers = async (req, res) => {
-  const users = await User.find({ isActive: true })
+  const users = await User.find({
+    companyId: req.companyId,
+    isActive: true,
+  })
     .select("name email isActive roleId createdAt")
     .populate("roleId", "name");
 
-  res.json(users);
+  res.status(200).json({ users });
 };
+
 export const updateUser = async (req, res) => {
   const { userId } = req.params;
   const { name, email, password, roleId } = req.body;
 
-  const user = await User.findById(userId);
+  const user = await User.findOne({ _id: userId, companyId: req.companyId });
+
   if (!user || !user.isActive) {
-    return res.status(404).json({ message: "User not found" });
+    return res.status(404).json({
+      message: "User not found",
+    });
   }
 
-  // Email uniqueness check (excluding self)
+  if (user.isSuperAdmin) {
+    return res.status(403).json({
+      message: "Super admin cannot be modified",
+    });
+  }
+
   if (email && email !== user.email) {
     const emailExists = await User.findOne({
       email,
+      companyId: user.companyId,
       _id: { $ne: userId },
     });
 
     if (emailExists) {
-      return res.status(400).json({ message: "Email already in use" });
+      return res.status(400).json({
+        message: "Email already used in this company",
+      });
     }
   }
 
   if (name) user.name = name;
   if (email) user.email = email;
   if (roleId) user.roleId = roleId;
-
-  if (password) {
-    user.password = await bcrypt.hash(password, 10);
-  }
+  if (password) user.password = await bcrypt.hash(password, 10);
 
   await user.save();
 
-  res.json({
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    roleId: user.roleId,
+  res.status(200).json({
+    message: "User updated successfully",
   });
 };
